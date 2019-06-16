@@ -28,6 +28,9 @@ import org.vanilladb.core.query.planner.QueryPlanner;
 import org.vanilladb.core.query.planner.UpdatePlanner;
 import org.vanilladb.core.query.planner.index.IndexUpdatePlanner;
 import org.vanilladb.core.query.planner.opt.HeuristicQueryPlanner;
+import org.vanilladb.core.query.algebra.Plan;
+import org.vanilladb.core.query.algebra.Scan;
+import org.vanilladb.core.query.planner.BasicSamplePlanner;
 import org.vanilladb.core.server.task.TaskMgr;
 import org.vanilladb.core.sql.storedprocedure.SampleStoredProcedureFactory;
 import org.vanilladb.core.sql.storedprocedure.StoredProcedureFactory;
@@ -60,7 +63,7 @@ public class VanillaDb {
 	private static Logger logger = Logger.getLogger(VanillaDb.class.getName());
 
 	// Classes
-	private static Class<?> queryPlannerCls, updatePlannerCls;
+	private static Class<?> queryPlannerCls, updatePlannerCls,samplePlannerCls;
 
 	// Managers
 	private static FileMgr fileMgr;
@@ -78,6 +81,7 @@ public class VanillaDb {
 	 * Initialization Flag
 	 */
 	private static boolean inited;
+	public static Regions regions;
 
 	/**
 	 * Initializes the system. This method is called during system startup.
@@ -121,6 +125,10 @@ public class VanillaDb {
 				VanillaDb.class.getName() + ".UPDATEPLANNER",
 				IndexUpdatePlanner.class, UpdatePlanner.class);
 		
+		samplePlannerCls = CoreProperties.getLoader().getPropertyAsClass(
+				VanillaDb.class.getName() + ".SAMPLEPLANNER",
+				BasicSamplePlanner.class, QueryPlanner.class);
+		
 		// initialize storage engine
 		initFileAndLogMgr(dirName);
 		initTaskMgr();
@@ -160,9 +168,31 @@ public class VanillaDb {
 				VanillaDb.class.getName() + ".DO_CHECKPOINT", true);
 		if (doCheckpointing)
 			initCheckpointingTask();
-
+		
+		
+		Transaction initRegionTx = txMgr.newTransaction(
+				Connection.TRANSACTION_SERIALIZABLE, false);
+		init_RegionTable(initRegionTx);
+		
 		// finish initialization
 		inited = true;
+	}
+	public static Regions getRegions() {
+		return regions;
+	}
+	public static void init_RegionTable(Transaction tx) {
+		regions = new Regions();
+		String sql = "SELECT r_id,ni,ki FROM region"; 
+		Plan p = newPlanner().createQueryPlan(sql, tx);
+		Scan s = p.open();
+		s.beforeFirst();
+		while(s.next()) {
+			int r_id = (int) s.getVal("r_id").asJavaVal();
+			int ni = (int) s.getVal("ni").asJavaVal();
+			int ki = (int) s.getVal("ki").asJavaVal();
+			regions.addRegion(r_id, ni, ki);
+		}
+		s.close();
 	}
 
 	/**
@@ -283,16 +313,18 @@ public class VanillaDb {
 	public static Planner newPlanner() {
 		QueryPlanner qplanner;
 		UpdatePlanner uplanner;
+		QueryPlanner splanner;
 
 		try {
 			qplanner = (QueryPlanner) queryPlannerCls.newInstance();
 			uplanner = (UpdatePlanner) updatePlannerCls.newInstance();
+			splanner = (QueryPlanner) samplePlannerCls.newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
 			return null;
 		}
 
-		return new Planner(qplanner, uplanner);
+		return new Planner(qplanner, uplanner,splanner);
 	}
 
 	/**

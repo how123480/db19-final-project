@@ -14,19 +14,35 @@
  * limitations under the License.
  *******************************************************************************/
 package org.vanilladb.bench.server.procedure.micro;
-
 import org.vanilladb.bench.server.param.micro.MicroTxnProcParamHelper;
+import org.vanilladb.bench.server.param.micro.Workload;
 import org.vanilladb.bench.server.procedure.BasicStoredProcedure;
 import org.vanilladb.core.query.algebra.Scan;
 
 public class MicroTxnProc extends BasicStoredProcedure<MicroTxnProcParamHelper> {
-
+	Workload wl;
 	public MicroTxnProc() {
 		super(new MicroTxnProcParamHelper());
+		wl = new Workload();
 	}
 
 	@Override
 	protected void executeSql() {
+		
+		for(int i=0;i<wl.QuerySize;++i) {
+			double[] ori_value = sampleQuery(wl.query[i]);
+			double[] sample_value = sampleQuery("sample "+wl.query[i]);
+			
+			double error = Math.abs((ori_value[0]-sample_value[0]))/ori_value[0];
+			System.out.println("--------------------------------------------------------");
+			System.out.println("value of original query : " + ori_value[0]);
+			System.out.println("original query respone time : " + ori_value[1]+" (ms)");
+			System.out.println("value of sample query : " + sample_value[0]);
+			System.out.println("sample query respone time : " + sample_value[1]+" (ms)");
+			System.out.println("error : "+error+"(%)");
+			System.out.println("--------------------------------------------------------");
+		}
+		/*
 		// SELECT
 		for (int idx = 0; idx < paramHelper.getReadCount(); idx++) {
 			int iid = paramHelper.getReadItemId(idx);
@@ -50,5 +66,7 @@ public class MicroTxnProc extends BasicStoredProcedure<MicroTxnProcParamHelper> 
 			double newPrice = paramHelper.getNewItemPrice(idx);
 			executeUpdate("UPDATE item SET i_price = " + newPrice + " WHERE i_id =" + iid);
 		}
+		*/
+		
 	}
 }

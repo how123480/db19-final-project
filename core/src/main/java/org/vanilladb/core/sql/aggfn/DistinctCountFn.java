@@ -36,7 +36,11 @@ public class DistinctCountFn extends AggregationFn {
 		this.fldName = fldName;
 		this.distValues = new HashSet<Constant>();
 	}
-
+	
+	public void setSample() {
+		
+	}
+	
 	@Override
 	public void processFirst(Record rec) {
 		if (distValues.size() != 0)

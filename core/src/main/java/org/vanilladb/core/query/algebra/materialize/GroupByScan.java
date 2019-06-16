@@ -30,6 +30,7 @@ public class GroupByScan implements Scan {
 	private Collection<AggregationFn> aggFns;
 	private GroupValue groupVal;
 	private boolean moreGroups;
+	private boolean isSample;
 
 	/**
 	 * Creates a groupby scan, given a grouped table scan.

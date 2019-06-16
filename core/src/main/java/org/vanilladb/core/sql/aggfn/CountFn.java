@@ -18,29 +18,49 @@ package org.vanilladb.core.sql.aggfn;
 import static org.vanilladb.core.sql.Type.INTEGER;
 
 import org.vanilladb.core.sql.Constant;
+import org.vanilladb.core.sql.DoubleConstant;
 import org.vanilladb.core.sql.IntegerConstant;
 import org.vanilladb.core.sql.Record;
 import org.vanilladb.core.sql.Type;
+
+import org.vanilladb.core.server.VanillaDb;
 
 /**
  * The <em>count</em> aggregation function.
  */
 public class CountFn extends AggregationFn {
 	private String fldName;
-	private int count;
+	private double count;
+	private boolean isSample = false;
 
 	public CountFn(String fldName) {
 		this.fldName = fldName;
 	}
+	public void setSample() {
+		isSample = true;
+	}
 
 	@Override
 	public void processFirst(Record rec) {
-		count = 1;
+		if(isSample) {
+			int r_id = (int)rec.getVal("r_id").asJavaVal();
+			double ki = (double)VanillaDb.getRegions().getKibyId(r_id);
+			double ni = (double)VanillaDb.getRegions().getNibyId(r_id);
+			count = ni/ki;
+			System.out.println("[CountFn] "+r_id+" "+ki+" "+ni);
+		}else 
+			count = 1;
 	}
 
 	@Override
 	public void processNext(Record rec) {
-		count++;
+		if(isSample) {
+			int r_id = (int)rec.getVal("r_id").asJavaVal();
+			double ki = (double)VanillaDb.getRegions().getKibyId(r_id);
+			double ni = (double)VanillaDb.getRegions().getNibyId(r_id);
+			count +=ni/ki;
+		}else
+			count++;
 	}
 
 	@Override
@@ -55,7 +75,7 @@ public class CountFn extends AggregationFn {
 
 	@Override
 	public Constant value() {
-		return new IntegerConstant(count);
+		return new IntegerConstant((int)count);
 	}
 
 	@Override

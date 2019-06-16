@@ -50,7 +50,7 @@ public class ConsoleSQLInterpreter {
 
 				if (cmd.startsWith("exit") || cmd.startsWith("EXIT"))
 					break;
-				else if (cmdf.startsWith("SELECT")|| cmdf.startsWith("EXPLAIN"))
+				else if (cmdf.startsWith("SELECT")|| cmdf.startsWith("EXPLAIN") || cmdf.startsWith("SAMPLE"))
 					doQuery(cmd,cmdf);
 				else
 					doUpdate(cmd);
@@ -69,6 +69,8 @@ public class ConsoleSQLInterpreter {
 
 	private static void doQuery(String cmd,String cmdf) {
 		try {
+			long start_time = System.currentTimeMillis();
+			long end_time;
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery(cmd);
 			ResultSetMetaData md = rs.getMetaData();
@@ -85,6 +87,7 @@ public class ConsoleSQLInterpreter {
 				else
 					System.out.format(fmt, md.getColumnName(i));
 			}
+			end_time = System.currentTimeMillis();
 
 			System.out.println();
 			for (int i = 0; i < totalwidth; i++)
@@ -110,6 +113,8 @@ public class ConsoleSQLInterpreter {
 				}
 				System.out.println();
 			}
+			System.out.println();
+			System.out.println("Response time : "+(end_time-start_time)+" (ms)");
 			rs.close();
 		} catch (SQLException e) {
 			System.out.println("SQL Exception: " + e.getMessage());

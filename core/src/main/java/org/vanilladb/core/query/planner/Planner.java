@@ -28,6 +28,7 @@ import org.vanilladb.core.query.parse.ModifyData;
 import org.vanilladb.core.query.parse.Parser;
 import org.vanilladb.core.query.parse.QueryData;
 import org.vanilladb.core.storage.tx.Transaction;
+import org.vanilladb.core.query.planner.BasicSamplePlanner;
 
 /**
  * The object that executes SQL statements.
@@ -37,10 +38,12 @@ import org.vanilladb.core.storage.tx.Transaction;
 public class Planner {
 	private QueryPlanner qPlanner;
 	private UpdatePlanner uPlanner;
-
-	public Planner(QueryPlanner qPlanner, UpdatePlanner uPlanner) {
+	private QueryPlanner sPlanner;
+	
+	public Planner(QueryPlanner qPlanner, UpdatePlanner uPlanner,QueryPlanner sPlanner) {
 		this.qPlanner = qPlanner;
 		this.uPlanner = uPlanner;
+		this.sPlanner = sPlanner;
 	}
 
 	/**
@@ -57,6 +60,22 @@ public class Planner {
 		QueryData data = parser.queryCommand();
 		Verifier.verifyQueryData(data, tx);
 		return qPlanner.createPlan(data, tx);
+	}
+	
+	public double[] sampleQuery(String qry,Transaction tx) {
+		Parser parser = new Parser(qry);
+		QueryData data = parser.queryCommand();
+		Verifier.verifyQueryData(data, tx);
+		BasicSamplePlanner bsp = (BasicSamplePlanner)sPlanner;
+		return bsp.sampleQuery(data, tx);
+	}
+	
+	public int executeRecordTag(String qry,Transaction tx,int i) {
+		Parser parser = new Parser(qry);
+		QueryData data = parser.queryCommand();
+		Verifier.verifyQueryData(data, tx);
+		BasicSamplePlanner bsp = (BasicSamplePlanner)sPlanner;
+		return bsp.tag_record(data, tx,i);
 	}
 
 	/**

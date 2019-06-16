@@ -35,4 +35,5 @@ public interface QueryPlanner {
 	 * @return a plan for that query
 	 */
 	Plan createPlan(QueryData data, Transaction tx);
+	//int tag_record(QueryData data, Transaction tx);
 }

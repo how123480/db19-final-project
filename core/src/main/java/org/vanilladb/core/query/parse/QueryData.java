@@ -28,7 +28,7 @@ import org.vanilladb.core.sql.predicate.Predicate;
  * Data for the SQL <em>select</em> and <em>explain</em> statements.
  */
 public class QueryData {
-	private Set<String> projFields;
+	public Set<String> projFields;
 	private Set<String> tables;
 	private Predicate pred;
 	private Set<String> groupFields;
@@ -36,6 +36,7 @@ public class QueryData {
 	private List<String> sortFields;
 	private List<Integer> sortDirs;
 	private boolean isExplain;
+	private boolean isSample;
 
 	/**
 	 * Saves the information of a SQL query.
@@ -57,8 +58,9 @@ public class QueryData {
 	 * @param sortDirs
 	 *            a list of sort directions
 	 */
-	public QueryData(boolean isExplain, Set<String> projFields, Set<String> tables, Predicate pred,
+	public QueryData(boolean isSample,boolean isExplain, Set<String> projFields, Set<String> tables, Predicate pred,
 			Set<String> groupFields, Set<AggregationFn> aggFn, List<String> sortFields, List<Integer> sortDirs) {
+		this.isSample = isSample;
 		this.isExplain = isExplain;
 		this.projFields = projFields;
 		this.tables = tables;
@@ -141,6 +143,9 @@ public class QueryData {
 	 */
 	public boolean isExplain() {
 		return isExplain;
+	}
+	public boolean isSample() {
+		return isSample;
 	}
 
 	public String toString() {

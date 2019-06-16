@@ -33,6 +33,9 @@ public class AvgFn extends AggregationFn {
 	public AvgFn(String fldName) {
 		this.fldName = fldName;
 	}
+	public void setSample() {
+		
+	}
 
 	@Override
 	public void processFirst(Record rec) {

@@ -236,7 +236,7 @@ public class GroupByPlan extends ReduceRecordsPlan {
 		// discard percentiles
 		return new Bucket(maxRange, numGroups, Math.min(numGroups, dv));
 	}
-
+	private boolean isSample;
 	private Plan sp;
 	private Set<String> groupFlds;
 	private Set<AggregationFn> aggFns;

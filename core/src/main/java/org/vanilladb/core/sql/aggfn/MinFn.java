@@ -29,6 +29,10 @@ public class MinFn extends AggregationFn {
 	public MinFn(String fldName) {
 		this.fldName = fldName;
 	}
+	
+	public void setSample() {
+		
+	}
 
 	@Override
 	public void processFirst(Record rec) {

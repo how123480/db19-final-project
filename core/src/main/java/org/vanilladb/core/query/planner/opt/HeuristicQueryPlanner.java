@@ -26,6 +26,9 @@ import org.vanilladb.core.query.algebra.materialize.SortPlan;
 import org.vanilladb.core.query.parse.QueryData;
 import org.vanilladb.core.query.planner.QueryPlanner;
 import org.vanilladb.core.server.VanillaDb;
+import org.vanilladb.core.sql.aggfn.AggregationFn;
+import org.vanilladb.core.sql.aggfn.CountFn;
+import org.vanilladb.core.sql.aggfn.SumFn;
 import org.vanilladb.core.storage.tx.Transaction;
 
 /**
@@ -44,8 +47,18 @@ public class HeuristicQueryPlanner implements QueryPlanner {
 	@Override
 	public Plan createPlan(QueryData data, Transaction tx) {
 		// Step 1: Create a TablePlanner object for each mentioned table/view
+		if(data.isSample()) {
+			for(AggregationFn aggFn:data.aggregationFn()) {
+				if(aggFn.getClass().equals(CountFn.class))
+					aggFn.setSample();
+				if(aggFn.getClass().equals(SumFn.class))
+					aggFn.setSample();
+			}
+		}
 		int id = 0;
 		for (String tbl : data.tables()) {
+			if(data.isSample())
+				tbl = "sample_"+tbl;
 			String viewdef = VanillaDb.catalogMgr().getViewDef(tbl, tx);
 			if (viewdef != null)
 				views.add(VanillaDb.newPlanner().createQueryPlan(viewdef, tx));

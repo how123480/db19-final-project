@@ -87,7 +87,22 @@ public abstract class BasicStoredProcedure<H extends StoredProcedureParamHelper>
 		} else
 			throw new RuntimeException("Query: '" + sql + "' fails.");
 	}
-	
+	protected Scan sample(String sql) {
+		Plan p = VanillaDb.newPlanner().createQueryPlan(sql, tx);
+		Scan s = p.open();
+		s.beforeFirst();
+		if (s.next()) {
+			return s;
+		} else
+			throw new RuntimeException("Query: '" + sql + "' fails.");
+	}
+	protected int tag_record(String sql,int i) {
+		return VanillaDb.newPlanner().executeRecordTag(sql, tx,i);
+	}
+	protected double[] sampleQuery(String sql) {
+		double [] report = VanillaDb.newPlanner().sampleQuery(sql,tx);
+		return report;
+	}
 	protected void executeUpdate(String sql) {
 		VanillaDb.newPlanner().executeUpdate(sql, tx);
 	}

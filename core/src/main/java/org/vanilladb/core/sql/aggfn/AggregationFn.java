@@ -83,7 +83,7 @@ public abstract class AggregationFn {
 	 *         field
 	 */
 	public abstract boolean isArgumentTypeDependent();
-
+	public abstract void setSample();
 	/**
 	 * Returns a hash code value for the object.
 	 */

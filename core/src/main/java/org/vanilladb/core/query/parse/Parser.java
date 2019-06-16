@@ -227,7 +227,12 @@ public class Parser {
 	 * Methods for parsing queries.
 	 */
 	public QueryData queryCommand() {
+		boolean isSample = false;
 		boolean isExplain = false;
+		if(lex.matchKeyword("sample")) {
+			isSample = true;
+			lex.eatKeyword("sample");
+		}
 		if (lex.matchKeyword("explain")) {
 			isExplain = true;
 			lex.eatKeyword("explain");
@@ -264,7 +269,7 @@ public class Parser {
 			sortFields = sortList.fieldList();
 			sortDirs = sortList.directionList();
 		}
-		return new QueryData(isExplain, projs.asStringSet(), tables, pred,
+		return new QueryData(isSample,isExplain, projs.asStringSet(), tables, pred,
 				groupFields, projs.aggregationFns(), sortFields, sortDirs);
 	}
 
